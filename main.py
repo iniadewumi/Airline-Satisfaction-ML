@@ -28,7 +28,8 @@ class Satisfaction:
         model_type = input("What classifier do you want to load? (RandomForest, KNN, NeuralNetwork or SVM) Default='RandomForest': ")
         print(f"Loading latest {model_type} model...")
         if not model_name:
-            model_name = str(latest_file())
+            model_name = str(latest_file(model_type=model_type)) if model_type else str(latest_file())
+        
         with open(model_name, "rb") as f:
             self.trained_model = pickle.load(f)     
             
@@ -40,6 +41,12 @@ class Satisfaction:
         res = self.trained_model.predict(X)[0]
         print(f"Result: {out[int(res)]}")
         return out[int(res)]
+    
+    def preprocess(self, row):
+        
+        encodings = self.df.groupby('Class')['Satisfaction'].mean().reset_index().rename(columns={"Satisfaction":"Encoded_Class"})
+        self.target_encoded = self.df.merge(encodings, how='left', on='Class')
+        self.target_encoded.drop('Class', axis=1, inplace=True)
         
     
 if __name__ == "__main__":
