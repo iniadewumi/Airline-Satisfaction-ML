@@ -2,6 +2,7 @@ import pathlib
 import pickle
 from sklearn.preprocessing import MinMaxScaler, StandardScaler, Normalizer
 import numpy as np
+from time import sleep
 
 
 ROOT = pathlib.Path().resolve()
@@ -34,10 +35,19 @@ class Satisfaction:
             self.trained_model = pickle.load(f)     
             
     def predict(self, X:list, scaled:bool=False):
+        if len(X)!= self.trained_model.n_features_in_:
+            X = None
+            print(Warning("\nThe number of features don't match, enter features below\n\n"))
+            sleep(2)
+        if not X:
+            print("\n******************************************************\n")
+            print("You will need to retrieve feature names for prediction in the following order\n\n", "\n".join(self.trained_model.feature_names_in_))
+            X = input("\nEnter List, Dictionary or DataFrame of features below: ")
+        
         X = np.asarray(X).reshape(1, -1)
         out = ["Unsatisfied or Neutral", "Satisfied"]
         if not scaled:
-            scaled_inp = StandardScaler().fit_transform(X)
+            X = StandardScaler().fit_transform(X)
         res = self.trained_model.predict(X)[0]
         print(f"Result: {out[int(res)]}")
         return out[int(res)]
@@ -50,8 +60,24 @@ class Satisfaction:
         
     
 if __name__ == "__main__":
-    X = [1.0, 1.0, 52.0, 1.0, 160.0, 5.0, 4.0, 3.0, 4.0, 3.0, 4.0, 3.0, 5.0, 5.0, 5.0, 5.0, 2.0, 5.0, 5.0, 50.0, 44.0, 0.1938775510204081]
     sat = Satisfaction()
-    sat.predict(X)
+    sat.predict({'Customer Type': 1.0,
+ 'Age': 0.2692307692307692,
+ 'Type of Travel': 0.0,
+ 'Wifi Service': 0.75,
+ 'Online Booking': 0.75,
+ 'Online Boarding': 0.75,
+ 'Seat Comfort': 1.0,
+ 'On-board Service': 0.75,
+ 'Leg Room': 1.0,
+ 'Baggage': 0.5,
+ 'Checkin Service': 0.0,
+ 'Inflight Service': 0.5,
+ 'Cleanliness': 1.0,
+ 'Departure Delay': 0.0026595744680851063,
+ 'Arrival Delay': 0.007174887892376682,
+ 'Encoded_Class': 1.0})
+    
+    print(sat.trained_model.score(self.x_test, self.y_test))
     
     
