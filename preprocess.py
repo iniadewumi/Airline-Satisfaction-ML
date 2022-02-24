@@ -22,12 +22,16 @@ class Cleaner:
         self.df["Gender"] = self.df["Gender"].apply(lambda x: float(1) if x=="Female" else float(0))
         self.df['Type of Travel'] =  self.df['Type of Travel'].apply(lambda x: float(1) if x=="Business travel" else float(0))
         
+        #######################################TEST
+        # self.df['Class'] = self.df['Class'].apply(lambda x: 3 if x=="Business" else x)
+        # self.df['Class'] = self.df['Class'].apply(lambda x: 2 if x=="Eco Plus" else x)
+        # self.df['Class'] = self.df['Class'].apply(lambda x: 1 if x=="Eco" else x)
     def target_encode(self):
         #USING TARGET ENCODING TO PREVENT DIMENSIONALITY ISSUES
         encodings = self.df.groupby('Class')['Satisfaction'].mean().reset_index().rename(columns={"Satisfaction":"Encoded_Class"})
         self.target_encoded = self.df.merge(encodings, how='left', on='Class')
         self.target_encoded.drop('Class', axis=1, inplace=True)
-        
+    
     def one_hot_encode(self):
         self.one_hot_encoded = pd.get_dummies(self.df["Class"], drop_first=True)
         self.one_hot_encoded[self.df.loc[:, self.df.columns!="Class"].columns] = self.df.loc[:, self.df.columns!="Class"]
@@ -35,6 +39,7 @@ class Cleaner:
     def saver(self):
         self.target_encoded.to_csv(DATASETS/"Cleaned-Satisfaction (TE).csv", index=False)
         self.one_hot_encoded.to_csv(DATASETS/"Cleaned-Satisfaction (OHE).csv", index=False)
+        # self.df.to_csv(DATASETS/"Cleaned-Satisfaction (NUM).csv", index=False)
         
     def preprocess(self):
         self.make_dummy()

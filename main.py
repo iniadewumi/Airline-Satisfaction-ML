@@ -3,6 +3,7 @@ import pickle
 from sklearn.preprocessing import MinMaxScaler, StandardScaler, Normalizer
 import numpy as np
 from time import sleep
+import pandas as pd
 
 
 ROOT = pathlib.Path().resolve()
@@ -13,6 +14,8 @@ MODELS = ROOT / "Models"
 
 def latest_file(path=MODELS, model_type="RandomForest"):
     files = [x for x in path.glob("*.pickle") if model_type in str(x)]
+    if not files:
+        raise FileNotFoundError("\nMODEL DOES NOT EXIST FOR THIS CLASSIFIER YET!\nTrain and save a model using the training.py file")
     return max(files, key=lambda x: x.stat().st_ctime)
 
 class Satisfaction:
@@ -26,29 +29,47 @@ class Satisfaction:
         Args:
             model_name ([type], optional): [description]. Defaults to None.
         """
-        model_type = input("What classifier do you want to load? (RandomForest, KNN, NeuralNetwork or SVM) Default='RandomForest': ")
+        model_type = input("What classifier do you want to load? (StackClassifier, ETEnsemble, RandomForest, KNN, NeuralNetwork or SVM) Default='RandomForest': ")
         print(f"Loading latest {model_type} model...")
+        
         if not model_name:
-            model_name = str(latest_file(model_type=model_type)) if model_type else str(latest_file())
+            model_name = pathlib.Path(str(latest_file(model_type=model_type)) if model_type else str(latest_file()))
         
         with open(model_name, "rb") as f:
-            self.trained_model = pickle.load(f)     
+            self.trained_model = pickle.load(f)  
+        print(f"""
+==========================================
+MODEL TYPE: {model_type}
+MODEL FILENAME: {model_name.name}
+Model Accuracy is: {round(self.trained_model.test_score * 100, 4)}%
+=========================================""")
+        
+
             
     def predict(self, X:list, scaled:bool=False):
-        if len(X)!= self.trained_model.n_features_in_:
-            X = None
-            print(Warning("\nThe number of features don't match, enter features below\n\n"))
-            sleep(2)
+        # if len(X)!= self.trained_model.n_features_in_:
+        #     X = None
+        #     print(Warning("\nThe number of features don't match, enter features below\n\n"))
+        #     sleep(2)
         if not X:
             print("\n******************************************************\n")
             print("You will need to retrieve feature names for prediction in the following order\n\n", "\n".join(self.trained_model.feature_names_in_))
-            X = input("\nEnter List, Dictionary or DataFrame of features below: ")
+            X = input("\nEnter List, Dictionary or DataFrame of features below (set scaled=True if the input data is scaled): ")
         
-        X = np.asarray(X).reshape(1, -1)
+        if type(X) == list:
+            if type(X[0]) == dict:
+                inp_X = pd.DataFrame.from_dict(X)
+            else:
+                inp_X = np.asarray(X).reshape(1, -1)
+
+        elif type(X) == dict:
+            inp_X = pd.DataFrame.from_dict(X[0], orient='index').T
+            
         out = ["Unsatisfied or Neutral", "Satisfied"]
         if not scaled:
-            X = StandardScaler().fit_transform(X)
-        res = self.trained_model.predict(X)[0]
+            inp_X = StandardScaler().fit_transform(inp_X)
+        x = inp_X.values if type(inp_X)==pd.core.frame.DataFrame else inp_X
+        res = self.trained_model.predict(x)[0]
         print(f"Result: {out[int(res)]}")
         return out[int(res)]
     
@@ -61,7 +82,8 @@ class Satisfaction:
     
 if __name__ == "__main__":
     sat = Satisfaction()
-    sat.predict({'Customer Type': 1.0,
+    print("\n******************************************************\nTest Input:\nCorrect Class: Unsatisfied or Neutral")
+    sat.predict(X=[{'Customer Type': 1.0,
  'Age': 0.2692307692307692,
  'Type of Travel': 0.0,
  'Wifi Service': 0.75,
@@ -75,9 +97,11 @@ if __name__ == "__main__":
  'Inflight Service': 0.5,
  'Cleanliness': 1.0,
  'Departure Delay': 0.0026595744680851063,
- 'Arrival Delay': 0.007174887892376682,
- 'Encoded_Class': 1.0})
+ 'Arrival Delay': 0.007174887892376682
+ }])
+    print("\n******************************************************\n")
     
-    print(sat.trained_model.score(self.x_test, self.y_test))
+
+    # print(sat.trained_model.score(self.x_test, self.y_test))
     
     
