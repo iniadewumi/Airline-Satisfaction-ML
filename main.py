@@ -29,7 +29,7 @@ class Satisfaction:
         Args:
             model_name ([type], optional): [description]. Defaults to None.
         """
-        model_type = input("What classifier do you want to load? (StackClassifier, ETEnsemble, RandomForest, KNN, NeuralNetwork or SVM) Default='RandomForest': ")
+        model_type = input("\nWELCOME!\n\nWhat classifier do you want to load? (StackClassifier, ETEnsemble, RandomForest, KNN, NeuralNetwork or SVM) Default='RandomForest': ")
         print(f"Loading latest {model_type} model...")
         
         if not model_name:
@@ -70,7 +70,10 @@ Model Accuracy is: {round(self.trained_model.test_score * 100, 4)}%
             inp_X = StandardScaler().fit_transform(inp_X)
         x = inp_X.values if type(inp_X)==pd.core.frame.DataFrame else inp_X
         res = self.trained_model.predict(x)[0]
-        print(f"Result: {out[int(res)]}")
+        res_df = pd.DataFrame(columns=["Correct Class".ljust(25), "Predicted Result".ljust(25)])
+        res_df.loc[0] = ["Unsatisfied or Neutral".ljust(25), str(out[int(res)]).ljust(25)]
+
+        print(f"TEST PREDICTION\n\n{res_df.to_string(index=False)}")
         return out[int(res)]
     
     def preprocess(self, row):
@@ -82,7 +85,7 @@ Model Accuracy is: {round(self.trained_model.test_score * 100, 4)}%
     
 if __name__ == "__main__":
     sat = Satisfaction()
-    print("\n******************************************************\nTest Input:\nCorrect Class: Unsatisfied or Neutral")
+    print("\n******************************************************\n")
     sat.predict(X=[{'Customer Type': 1.0,
  'Age': 0.2692307692307692,
  'Type of Travel': 0.0,
@@ -98,10 +101,9 @@ if __name__ == "__main__":
  'Cleanliness': 1.0,
  'Departure Delay': 0.0026595744680851063,
  'Arrival Delay': 0.007174887892376682
- }])
+ }], scaled=True)
     print("\n******************************************************\n")
     
 
     # print(sat.trained_model.score(self.x_test, self.y_test))
-    
     

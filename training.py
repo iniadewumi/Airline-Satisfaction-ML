@@ -21,7 +21,7 @@ def latest_file(path=MODELS, model_type="RandomForest"):
 
 class Training:
     def __init__(self):
-        self.inp = pd.read_csv(DATASETS/"Cleaned-Satisfaction (NUM).csv")
+        self.inp = pd.read_csv(DATASETS/"Cleaned-Satisfaction (TE).csv")
         self.cols = [
                        # 'Gender',
                       'Customer Type',
@@ -45,7 +45,7 @@ class Training:
                       'Departure Delay',
                      'Arrival Delay',
                      'Satisfaction',
-                     # 'Encoded_Class'
+                      'Encoded_Class'
                      ]
         self.inp = self.inp[self.cols]
         self.rescale_and_split()
@@ -82,7 +82,12 @@ class Training:
 
 
         # print(classification_report(self.y_test, self.pred))
-        print(self.trained_model.test_score)
+        print(f"""
+===================================================
+Classifier Type: {classifier_type}
+Accuracy/Score: {self.trained_model.test_score}
+===================================================
+              """)
         # print(self.pred[:5])
 
         save_or_not = input("Save Model? (y or n) ")
@@ -129,7 +134,8 @@ class Training:
             
 # if __name__ == '__main__':
 #     train = Training()
-self = Training()
+if __name__ == '__main__':
+    self = Training()
 
 # ens = pd.DataFrame()
 
